@@ -4,8 +4,6 @@
 
 Chrissy h Roberts, Tara Mtuy, Tamsyn Derrick, Matthew J Burton, Martin J Holland
 
-Correspondence to Dr Chrissy h Roberts, Clinical Research Department, London School of Hygiene and Tropical Medicine, London WC1E 7HT, UK; chrissyhroberts@yahoo.co.uk
-
 https://doi.org/10.1136/bjophthalmol-2012-302653
 
 In ophthalmological studies, the need to take photographs as evidence introduces additional complications to fieldwork. A recent report1 highlighted the usefulness of smartphones in the collection and grading of photographic evidence of trachoma. We have recently considered the wider potential of portable computerised equipment to integrate the recording and management of trachoma photographs with field data and biological specimens.
