@@ -1,0 +1,5 @@
+
+11/09/22-13:04:04		Expert grading : H-0014_110922_104742_LEFT___DSC_0013.JPG : 22/09/2011_13:04:03 :  Phenotypes :  F: 3 P: 2 C: 1 Operator : HH Notes : 
+11/09/22-13:04:17		Expert grading : H-0014_110922_104758_LEFT___DSC_0013.JPG : 22/09/2011_13:04:15 :  Phenotypes :  F: 1 P: 0 C: 1 Operator : HH Notes : 
+11/09/22-13:04:42		Expert grading : H-0014_110922_104704_RIGHT___DSC_0012.JPG : 22/09/2011_13:04:41 :  Phenotypes :  F: 0 P: 0 C: 1 Operator : HH Notes : SDSDSD
+11/09/22-13:08:05		Expert grading : 110922_104704_RIGHT___DSC_0012.JPG : 22/09/2011_13:08:04 :  Phenotypes :  F: 0 P: 1 C: 2 Operator : GGG Notes : 

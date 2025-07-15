@@ -1,0 +1,91 @@
+#!/usr/bin/env perl
+
+use Tk;
+use Tk::JPEG;
+use Tk::Pane;
+use strict;
+use warnings;
+
+chomp(my @files = @ARGV);
+
+my $ii = -1; # image index
+
+my $mw = new MainWindow;
+
+
+my $scrolled = $mw
+    ->Scrolled( 'Pane', -scrollbars => 'osoe', -width => 640, -height => 480, )
+    ->pack( -expand => 1, -fill => 'both', );
+
+my $imagit = $scrolled
+    ->Label
+    ->pack( -expand => 1, -fill => 'both', );
+
+my( $xscroll, $yscroll ) = $scrolled->Subwidget( 'xscrollbar', 'yscrollbar' );
+
+my( $last_x, $last_y );
+
+my $img2;
+
+my $button = $mw->Button(-text => 'CLOSE', -command => \&exit);
+$button->pack; 
+
+    sub factor
+    {
+        my( $n, $m ) = @_;
+        ($n>$m) ? int($n/$m) : 1
+    }
+
+    sub min
+    {
+        my( $n, $m ) = @_;
+        $n < $m ? $n : $m
+    }
+
+sub show_image
+{
+    my $imgfile = $files[$ii];
+    $mw->configure( -title => "($ii) - - - - - - -" );
+    my $img1 = $mw->Photo( 'fullscale',
+        -format => 'jpeg',
+        -file => $imgfile,
+    );
+    # it's possible to manipulate an image during reading
+    # from disk, but unfortunately you don't get quite as
+    # much control as you do when copying one image to another,
+    # and some of the things we need to do we can only do
+    # during copy, not reading.
+    my $factor = min(
+        factor( $img1->width, $scrolled->width ),
+        factor( $img1->height, $scrolled->height ),
+    );
+    $img2 = $mw->Photo( 'resized' );
+    $img2->copy( $img1, -shrink, -subsample => $factor, $factor );
+    $imagit->configure(
+        -image => 'resized',
+        -width => $img2->width,
+        -height => $img2->height,
+    );
+    $mw->configure( -title => "($ii) $imgfile" );
+}
+
+sub prev_image
+{
+    $ii = ( $ii + @files - 1 ) % @files;
+    show_image();
+}
+
+sub next_image
+{
+    $ii = ( $ii + 1 ) % @files;
+    show_image();
+}
+
+$mw->after( 100, \&next_image );
+
+my $exit =".";
+							MainLoop;
+
+until($exit =~ /^q$/i)	{
+							chomp ($exit = <STDIN>);
+							}

@@ -1,0 +1,406 @@
+########################################################################################################
+##################                                                               #######################
+##################                           EYESCORES                           #######################
+##################                          USER GUIDE                           #######################
+##################                          V.1.00                               #######################
+##################          				                                     #######################
+########################################################################################################
+########################################################################################################
+########################################################################################################
+########################################################################################################
+#    Eyescores : A generalised tool for data and sample collection in studies of the eye               #
+#    Copyright (C) 2011 Chrissy h. Roberts. London School of Hygiene and Tropical Medicine             #
+#                                                                                                      #
+#                                                                                                      #
+#   This program is free software: you can redistribute it and/or modify                               #
+#   it under the terms of the GNU General Public License as published by                               #
+#   the Free Software Foundation, either version 3 of the License, or                                  #
+#   (at your option) any later version.                                                                #
+#                                                                                                      #
+#   This program is distributed in the hope that it will be useful,                                    #
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of                                     #
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                                      #
+#   GNU General Public License for more details.                                                       #
+#                                                                                                      #
+#   You should have received a copy of the GNU General Public License                                  #
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.                              #
+#                                                                                                      #
+#   Contact :                                                                                          #
+#               Chrissy h. Roberts.                                                                    #
+#				chrissyhroberts@yahoo.co.uk                                                            #
+#				Clinical Research Department, London School of Hygiene, Keppel St. London WC1E 7HT     #
+#                                                                                                      #
+########################################################################################################
+
+Note : This manual is incomplete, but should get you started.
+For limited support, contact Chrissyhroberts@yahoo.co.uk
+
+#######################################################################
+WHAT YOU GET
+#######################################################################
+At the end,
+
+Data in a database table, one line per sample
+
+Data in flatfiles, one file per sample, gets appended by error monitoring and sample grading
+
+Data in PDF, with annotated photos, gets appended by error monitoring and sample grading
+
+Raw photos are stored in PHOTOS folder. Grading data is appended to data files and to a grading file, one line per photo
+grading data is also appended to photo surface.
+
+
+
+#######################################################################
+System requirements:
+#######################################################################
+
+Eyescores is cross platform (PC/MAC, LINUX, UNIX etc) and runs under a programming language called perl
+
+Eyescores has a number of dependencies (other programmes and modules that it talks to in order to get
+the job done. Please follow the instructions carefully.
+
+It should run on just about any computer
+
+#######################################################################
+Installation on a PC
+#######################################################################
+
+Copy the eyescores folder to your computer hard-drive, preferably at the root
+				
+i.e. 				C:/eyescores/
+
+#######################################################################
+after installation, do not move or rename any folder in this directory.
+#######################################################################
+
+
+
+
+############## #########################################################
+INSTALL PERL
+#######################################################################
+Download and install the latest distribution of Strawberry perl 
+		http://strawberryperl.com/
+
+#######################################################################
+INSTALL PDF TOOLKIT
+#######################################################################
+Download and install the PDF toolkit PDFTK
+		http://www.pdflabs.com/docs/install-pdftk/
+
+#######################################################################
+INSTALL PDF TOOLKIT
+#######################################################################					
+Download and install Imagemagick 
+		http://www.imagemagick.org/script/binary-releases.php#windows
+		select the installer for the Win32 dynamic at 16 bits-per-pixel
+
+#######################################################################
+INSTALL OPENSSL
+#######################################################################
+
+
+#######################################################################
+Installation on a MAC
+#######################################################################
+Copy the eyescores folder to your finder.
+
+#######################################################################
+after installation, do not move or rename any folder in this directory.
+#######################################################################
+
+Use a MACPORTS installation of perl
+
+PDFTK and Imagemagick are best built form source.
+
+#######################################
+IMAGEMAGICK
+
+TEST THAT IMAGE MAGICK HAS ALL THE RIGHT THINGS
+
+convert -list configure
+
+CHECK FOR GHOSTSCRIPT (GS)
+CHECK FOR JPEG
+
+
+really like ImageMagick, as I think I've mentioned before. It produces much better images than GD does and still isn't a resource hog, which puts it on my Must Have list. I use ImageMagick on several of my own sites via PHP so it's on all of my servers. This means people I host get the advantage of having it available too.
+
+The only problem is that the default installation of ImageMagick will usually only support converting .gif images. Many times this is because of what the server itself supports natively. So every time I get a new server I have to remember what to install and how to install ImageMagick so that it'll support more image formats. I just had to do that (again) and suspect that others run into the same issue all too often, so following is a quick and dirty tutorial how to do it.
+
+Note: This is for a *nix system (RedHat Enterprise to be more exact) but should work with almost any installation, excepting a Windows server.
+
+First, if it's a new server that's never had ImageMagick installed before, you're likely going to need some additional files. Otherwise it simply won't work.
+
+Second, I'm assuming you have Root access to the server via SSH.
+
+Third, if you've previously tried to make or install ImageMagick, you're going to want to undo that. If you don't, you'll run into problems. Trust me on this one. So if you've already tried to install ImageMagick before finding these instructions navigate to the Source directory where you downloaded IM and type in: make uninstall
+
+Okay, now we're ready to start.
+
+The additional files you'll need are the libs for jpeg, png, tiff and lzw compression. You can check if they're already installed, or you can just install them. On a *nix system the header files should be stored in /usr/include and/or /usr/local/include. The files you'll be looking for are named:
+
+tiff.h
+png.h
+jpeglib.h
+
+If you have 'em all already you can skip some of the downloads below, though you may also choose to re-install them to make sure your libs are resonably up to date. The files you'll need are uploaded to my server here. They are:
+
+ImageMagick-6.2.3-0.tar.gz (Though you should also be able to use the most recent version from ImageMagick's site)
+jpegsrc.v6b.tar.gz
+libpng-1.0.6.tar.gz
+libtiff-lzw-compression-kit-1.1.tar.gz
+tiff-v3.5.5.tar.gz
+
+If you download these to your computer and then upload them to your server via FTP make sure you do so in Binary mode. ASCII transfers will break the files.
+
+Or, if you would prefer to download them directly to your server, SSH in and go to the directory where you keep stuff you've downloaded (/usr/local/src for me) and run the fullowing:
+
+wget http://www.randycullom.com/ImageMagick/ImageMagick-6.2.3-0.tar.gz
+wget http://www.randycullom.com/ImageMagick/jpegsrc.v6b.tar.gz
+wget http://www.randycullom.com/ImageMagick/libpng-1.0.6.tar.gz
+wget http://www.randycullom.com/ImageMagick/libtiff-lzw-compression-kit-1.1.tar.gz
+wget http://www.randycullom.com/ImageMagick/tiff-v3.5.5.tar.gz
+
+Next we need to unzip and uncompress each of the files. So:
+
+tar -zxvf ImageMagick-6.2.3-0.tar.gz
+tar -zxvf jpegsrc.v6b.tar.gz
+tar -zxvf libpng-1.0.6.tar.gz
+tar -zxvf libtiff-lzw-compression-kit-1.1.tar.gz
+tar -zxvf tiff-v3.5.5.tar.gz
+
+Now let's start installing stuff.
+
+Type:
+cd libpng-1.0.6/scripts
+
+Now do an "ls" to look for the makefile that matches your operating system. On all of my systems this is going to be one called makefile.linux, but choose the one that matches your system. If you don't see a file included for your operating system --and it's not a *nix system-- your best bet is to try to makefile.gcc file.
+
+Let's copy our makefile to a location we can use it. So in my case I would type:
+cp makefile.linux ../makefile
+
+And install libpng by typing:
+cd ..
+make
+make install
+
+Now let's move on to jpeg support. Type:
+cd ..
+cd jpeg-6b
+./configure --enable-shared
+make
+make install
+
+Next up is lzw compression support. Type:
+cd ..
+cd libtiff-lzw-compression-kit
+
+We need to make a small edit to the Makefile to make our lives easier. Normally you would do this either with nano, pico or vi. If you use nano or pico make sure you always use the -w option. I use nano, like:
+nano -w Makefile
+
+Change the line that reads:
+TIFF_SRC_DIR = /tmp/libtiff
+
+so that it reads:
+TIFF_SRC_DIR = ../tiff-v3.5.5
+
+Exit your editor, saving the changes. Then type:
+make install
+cd ..
+cd tiff-v3.5.5
+./configure
+
+Answer yes to the TIFF Configuration Parameters. When it's done type:
+make
+make install
+
+Finally, let's install ImageMagick. Type:
+cd ..
+cd ImageMagick-6.2.3
+./configure --enable-lzw=yes --enable-shared=yes --disable-static --without-perl
+make
+make install
+
+That's it! You should now have ImageMagick installed, with support for .gif, .jpg/jpeg, .png and .tiff file types. You can test it right from your SSH command line. ImageMagick comes with a test image that will produce an error if it experiences a problem. To test things out type the following:
+/usr/local/bin/convert logo: logo.gif
+/usr/local/bin/convert logo: logo.jpg
+/usr/local/bin/convert logo: logo.png
+/usr/local/bin/convert logo: logo.tiff
+
+You shouldn't see any errors. And when you do an ls you should see your four new files listed.
+
+[Added for Nick's question in the comments below.]
+The currently available original source(s) of the image library files can be found at:
+
+The Independent JPEG Group
+The LibPNG Reference Library
+The LibTIFF/TIFF Library
+and of course...
+The ImageMagick site for the IM source files
+
+I keep them all here because it's easier than directing people to multiple places so that one ends up with a final application that works. Plus I use 'em myself when I need to install IM on a new server. But by all means feel free to grab the updated versions from the above places, as long as you don't mind the possibly of having to work through a few niggling issues to get it all working properly.
+
+
+
+
+
+########################################
+If you don't know what you are doing, ask someone.
+#This part of the manual is incomplete, 
+please contact chrissyhroberts@yahoo.co.uk for help installing on a mac
+
+
+
+
+#######################################################################
+BOTH PC AND MAC
+#######################################################################
+
+#######################################################################
+INSTALL PERL MODULES
+#######################################################################
+Open a command prompt and type
+						
+							perl -MCPAN -e shell				(Note that this is case sensitive)
+							
+												followed by enter.
+							
+
+
+
+This will take you to a slightly different prompt (cpan>)
+indicating that you are now connected to the Comprehensive Perl Archive Network (CPAN)
+
+
+
+####################
+#Crypt::OpenSSL::Random
+#Crypt::OpenSSL::RSA
+
+native on Unix but problematic install on windows
+first install GNU SSL for windows
+
+http://gnuwin32.sourceforge.net/packages/openssl.htm
+then move to a simple folder such as C:/OpenSSL
+download source of Crypt::OpenSSL::Random and make using the following commands
+perl Makefile.Pl LIBS ="-LC:/OpenSSL/lib -lssl -lcrypto" INC=-IC:/OpenSSL/include
+then dmake install
+
+then use cpan to install Crypt::OpenSSL::RSA
+						#######################################################################
+						INSTALL PERL TOOLKIT (Tk)
+						#######################################################################
+						
+						At the CPAN prompt, type 
+						
+								install Tk					(Note that this is case sensitive)
+						
+												followed by enter
+						
+						this may take a while and a number of windows will open and close on your screen
+						Pay attention to the messages on the screen. The final message should tell you if the 
+						installation was successful. Help on installing modules under strawberry perl can be found here
+						http://win32.perl.org/wiki/index.php?title=Strawberry_Perl
+						
+						#######################################################################
+						INSTALL Tk::Pane module
+						#######################################################################
+						
+						At the CPAN prompt type
+						
+											install Tk::Pane					(Note that this is case sensitive)
+							
+															followed by enter
+						
+						Check that the installation was OK
+						
+						#######################################################################
+						INSTALL Tk::Jpeg module
+						#######################################################################
+						
+						At the prompt type
+						
+											install Tk::Jpeg					(Note that this is case sensitive)
+						
+															followed by enter
+						
+						Check that the installation was OK
+						
+						#######################################################################
+						INSTALL PDF::API2 module
+						#######################################################################
+						
+						At the prompt type
+						
+						install  PDF::API2					(Note that this is case sensitive)
+						
+						followed by enter
+						
+						Check that the installation was OK
+						
+						#######################################################################
+						INSTALL GPS::Garmin module
+						#######################################################################
+						At the prompt type
+						
+						install  GPS::Garmin					(Note that this is case sensitive)
+						
+						followed by enter
+						
+						Check that the installation was OK
+						
+
+						#######################################################################
+						Close CPAN connection
+						#######################################################################
+						at the CPAN prompt, type
+												exit
+													followed by enter
+						
+						you should now return to the command prompt i.e. C:/
+
+
+
+#######################################################################
+Install the EYE-FI Software
+#######################################################################
+
+#######################################################################
+Change the EYE-FI card settings so that the photos are not saved
+in dated folders
+set the directory for the eye-fi photos to
+
+path/PHOTOS/IMAGELANDINGBAY
+
+where path is the path to the eyescores directory
+
+#######################################################################
+
+
+
+#######################################################################
+Assuming that everything installed correctly, you should now be able to run eyescores
+#######################################################################
+
+
+
+
+RUNNING EYESCORES
+
+
+
+On a PC:
+		Double click the eyescores file
+			or
+		Open a command prompt, change to the eyescores directory and type 
+On a Mac:
+		Open a new terminal session in the eyescores folder and type
+		./eyescores
+		followed by enter
+
+
+
+followed by enter			
+						

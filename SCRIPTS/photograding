@@ -1,0 +1,408 @@
+#!/usr/bin/env perl
+use Tk;
+use Tk::JPEG;
+use Tk::Pane;
+#use strict;
+#use warnings;
+my ($fscore,$pscore,$cscore) ="n";
+my $fieldworker;
+use Cwd;
+use File::Copy;
+use PDF::API2;
+
+use POSIX "strftime";
+&photograding;
+
+sub photograding{
+my$width = 800;
+my$height = 600;
+my $dir = getcwd();
+#my ($fscore,$pscore,$cscore)="n";
+open OUTPUT, ">>$dir/DATA/photogradingdata.txt" or die $!;
+
+&fieldworkerdata;
+
+###################################
+
+sub fieldworkerdata	{
+					$fieldworker = ".";
+					print "Please enter your (Fieldworker's) name : ";
+					until($fieldworker =~ /\w+/){chomp ($fieldworker = <STDIN>)};
+					$fieldworker =~ tr/[a-z]/[A-Z]/;
+
+					print "Fieldworker is $fieldworker\n";
+					}
+
+###################################
+
+
+
+
+
+
+chdir $dir or die "Can't go do $dir - $!\n";
+
+
+my @files = <$dir/PHOTOS/IMAGESTORE/FOR_GRADING/*JPG> or die 	system ("perl $dir/eyescores");
+
+
+my $ii = 0; # image index
+my $length = @files;
+print "length $length\n";
+my $mw = new MainWindow;
+my $topfrm = $mw->Frame->pack(-side =>'top');
+my $picwin = $mw->Frame->pack(-side=>'left');
+
+my $radiofrm = $mw->Frame->pack(-side =>'right');
+
+my $labtitle = $topfrm -> Label(-text=>"Eyescores V.3.00 beta") -> pack(-side => 'top');
+my $button = $radiofrm->Button(-text    => ' Send FPC ',-command => 
+																sub { &sendfpc($fscore,$pscore,$cscore)})->pack(-anchor =>'s');
+$button -> grid(-row=>6,-column=>1,-columnspan=>2);							#grid geometry definition
+
+my $button2 = $radiofrm->Button(-text    => 'Normal eye',-command => 
+																sub { &sendfpc("0","0","0") })->pack(-anchor =>'s');
+$button2 -> grid(-row=>8,-column=>1,-columnspan=>2);							#grid geometry definition
+
+my$notes;
+my $entry = $radiofrm->Entry(-width=>30,-textvariable => \$notes)->pack();
+$entry -> grid(-row=>10,-column=>1,-columnspan=>2);							#grid geometry definition
+
+
+my $scrolled = $picwin
+    ->Scrolled( 'Pane', -scrollbars => 'osoe', -width => $width, -height => $height, )
+    ->pack( -expand => 1, -fill => 'both', );
+
+my $imagit = $scrolled
+    ->Label
+    ->pack( -expand => 1, -fill => 'both', );
+
+my( $xscroll, $yscroll ) = $scrolled->Subwidget( 'xscrollbar', 'yscrollbar' );
+
+my( $last_x, $last_y );
+
+my $img2;
+
+#$mw->bind( '<Prior>' => \&prev_image );
+#$mw->bind( '<Up>'    => \&prev_image );
+#$picwin->bind( '<Left>'  => \&prev_image );
+
+#$picwin->bind( '<Next>'  => \&next_image );
+#$picwin->bind( '<Down>'  => \&next_image );
+#$mw->bind( '<Right>' => \&next_image );
+
+
+    sub factor
+    {
+        my( $n, $m ) = @_;
+        ($n>$m) ? int($n/$m) : 1
+    }
+
+    sub min
+    {
+        my( $n, $m ) = @_;
+        $n < $m ? $n : $m
+    }
+
+sub show_image
+{
+    my $imgfile = $files[$ii];
+    my $img1 = $picwin->Photo( 'fullscale',-format => 'jpeg',-file => $imgfile);
+    my $factor = 4;
+    $img2 = $picwin->Photo( 'resized' );
+    $img2->copy( $img1, -shrink, -subsample => $factor, $factor );
+    $imagit->configure(-image => 'resized');
+}
+
+sub prev_image
+{
+    $ii = ( $ii + @files - 1 ) % @files;
+    show_image();
+}
+
+sub next_image
+{
+    $ii = ( $ii + 1 ) % @files;
+    show_image();
+}
+
+$picwin->after( 100, \&next_image );
+
+
+##################################################################################################
+sub sendfpc
+
+{
+	my ($f,$p,$c)=@_;
+	my ($sample,$uid);
+	print "index is $ii length is $length\n";
+	if ($files[$ii] =~/FOR_GRADING\//){$sample = $'}
+	if ($sample =~/_/){$uid = $`};
+	print "sample : $sample uid : $uid\n";
+	
+	if (($p =~ /[0-3]/) && ($f =~ /[0-3]/) && ($c =~ /[0-3]/))
+	{
+	if ($notes =~undef){$notes = "NONE"};
+	$notes =~ tr/[a-z]/[A-Z]/;
+	my $time = strftime ("%d/%m/%Y_%H:%M:%S",localtime(time()));
+	my $output = "Expert grading : $sample : $time :  Phenotypes :  F: $f P: $p C: $c Operator : $fieldworker Notes : $notes";
+	print "$output\t\n";	
+	select OUTPUT;
+	print "$sample\t$time\t$f\t$p\t$c\t$fieldworker\t$notes\n";
+	select STDOUT;
+	system(qq+convert $files[$ii] -background Orange -pointsize 40 label:"$output"  -append $files[$ii]+);
+
+#UPDATES THE SAMPLE FLATFILE TO INCLUDE EXPERT GRADING
+	open FLATFILE, ">>$dir/DATA/FLATFILES/$uid.txt" or die $!;
+	select FLATFILE;
+	my$gradingtime = strftime ("%y/%m/%d-%H:%M:%S\t",localtime(time()));		#prints timestamp of data collection yymmdd-hh:mm:ss
+	print "$uid\t$gradingtime\t$output\n";
+	select STDOUT;
+
+#MAKE A PDF EXPERT GRADING
+
+{
+my @textforpdf = ("Sample : $uid","$gradingtime","Expert grading","File : $sample","Time of grading : $time","Phenotypes :  F: $f P: $p C: $c","Operator : $fieldworker","Notes : $notes");
+my $pdf = PDF::API2->new();    # Create a blank PDF file
+my $page = $pdf->page();    # Add a blank page
+$page->mediabox('Letter');    # Set the page size
+my $font = $pdf->corefont('Arial');    # Add a built-in font to the PDF
+my $y = 750;
+# Add some text to the page
+my $text = $page->text();
+$text->font($font, 8);
+foreach (@textforpdf)	{
+						$y = ($y - 10);
+						$text->translate(50, $y);
+						$text->text($_);
+						}
+
+
+
+$pdf->saveas("$dir/PHOTOS/IMAGESTORE/FOR_GRADING/$uid.pdf");    # Save the PDF
+move ("$dir/DATA/PDF/$uid.pdf", "$dir/DATA/PDF/old.pdf");
+system ("pdftk $dir/DATA/PDF/old.pdf $dir/PHOTOS/IMAGESTORE/FOR_GRADING/$uid.pdf cat output $dir/DATA/PDF/$uid.pdf");
+unlink ("$dir/DATA/PDF/old.pdf");
+unlink ("$dir/PHOTOS/IMAGESTORE/FOR_GRADING/$uid.pdf");
+}
+
+	
+	$length --;
+#	$files[$ii] = undef;
+	move ("$files[$ii]", "$dir/PHOTOS/IMAGESTORE/GRADED/$'");
+	if ($length == 0)	{exit};
+						
+	$ii = ( $ii + 1 ) % @files;
+	show_image();
+	($fscore,$pscore,$cscore)="n";
+	$notes = undef;
+	}
+
+}
+##################################################################################################
+
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+#Radio buttons SET definition - fscore
+####################################################################################################################
+
+#define frame and label
+my $frm_fscore = $radiofrm -> Frame();												#framespace for radiobuttons
+my $lbl_fscore = $frm_fscore -> Label(-text=>"F: ");							#label for radiobutton set
+
+$frm_fscore -> grid(-row=>1,-column=>1,-columnspan=>2);							#grid geometry definition
+$lbl_fscore -> grid(-row=>1,-column=>1);										#grid geometry for label
+####################################################################################################################
+
+
+
+
+####################################################################################################################
+#individual radiobutton -fscore value f0
+####################################################################################################################
+my $rdb_f0 = $frm_fscore -> Radiobutton(
+										-text=>"0",  							#label for button
+										-value=>"0",  							#return value for capture variable
+										-variable=>\$fscore);					#define capture variable			
+$rdb_f0 -> grid(-row=>1,-column=>2);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -fscore value f1
+####################################################################################################################
+my $rdb_f1 = $frm_fscore -> Radiobutton(
+										-text=>"1",  							#label for button
+										-value=>"1",  							#return value for capture variable
+										-variable=>\$fscore);					#define capture variable			
+$rdb_f1 -> grid(-row=>1,-column=>3);											#grid geometry for button
+####################################################################################################################
+	
+####################################################################################################################
+#individual radiobutton -fscore value f1
+####################################################################################################################
+my $rdb_f2 = $frm_fscore -> Radiobutton(
+										-text=>"2",  							#label for button
+										-value=>"2",  							#return value for capture variable
+										-variable=>\$fscore);					#define capture variable			
+$rdb_f2 -> grid(-row=>1,-column=>4);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -fscore value f1
+####################################################################################################################
+my $rdb_f3 = $frm_fscore -> Radiobutton(
+										-text=>"3",  							#label for button
+										-value=>"3",  							#return value for capture variable
+										-variable=>\$fscore);					#define capture variable			
+$rdb_f3 -> grid(-row=>1,-column=>5);											#grid geometry for button
+####################################################################################################################
+#END OF RADIO BUTTON SET
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+#Radio buttons SET definition - pscore
+####################################################################################################################
+
+#define frame and label
+my $frm_pscore = $radiofrm -> Frame();												#framespace for radiobuttons
+my $lbl_pscore = $frm_pscore -> Label(-text=>"P: ");							#label for radiobutton set
+
+$frm_pscore -> grid(-row=>2,-column=>1,-columnspan=>2);							#grid geometry definition
+$lbl_pscore -> grid(-row=>1,-column=>1);										#grid geometry for label
+####################################################################################################################
+
+
+
+
+####################################################################################################################
+#individual radiobutton -pscore value f0
+####################################################################################################################
+my $rdb_p0 = $frm_pscore -> Radiobutton(
+										-text=>"0",  							#label for button
+										-value=>"0",  							#return value for capture variable
+										-variable=>\$pscore);					#define capture variable			
+$rdb_p0 -> grid(-row=>1,-column=>2);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -pscore value f1
+####################################################################################################################
+my $rdb_p1 = $frm_pscore -> Radiobutton(
+										-text=>"1",  							#label for button
+										-value=>"1",  							#return value for capture variable
+										-variable=>\$pscore);					#define capture variable			
+$rdb_p1 -> grid(-row=>1,-column=>3);											#grid geometry for button
+####################################################################################################################
+	
+####################################################################################################################
+#individual radiobutton -pscore value f1
+####################################################################################################################
+my $rdb_p2 = $frm_pscore -> Radiobutton(
+										-text=>"2",  							#label for button
+										-value=>"2",  							#return value for capture variable
+										-variable=>\$pscore);					#define capture variable			
+$rdb_p2 -> grid(-row=>1,-column=>4);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -pscore value f1
+####################################################################################################################
+my $rdb_p3 = $frm_pscore -> Radiobutton(
+										-text=>"3",  							#label for button
+										-value=>"3",  							#return value for capture variable
+										-variable=>\$pscore);					#define capture variable			
+$rdb_p3 -> grid(-row=>1,-column=>5);											#grid geometry for button
+####################################################################################################################
+#END OF RADIO BUTTON SET
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+#Radio buttons SET definition - cscore
+####################################################################################################################
+
+#define frame and label
+my $frm_cscore = $radiofrm -> Frame();												#framespace for radiobuttons
+my $lbl_cscore = $frm_cscore -> Label(-text=>"C: ");							#label for radiobutton set
+
+$frm_cscore -> grid(-row=>3,-column=>1,-columnspan=>2);							#grid geometry definition
+$lbl_cscore -> grid(-row=>1,-column=>1);										#grid geometry for label
+####################################################################################################################
+
+
+
+
+####################################################################################################################
+#individual radiobutton -cscore value f0
+####################################################################################################################
+my $rdb_c0 = $frm_cscore -> Radiobutton(
+										-text=>"0",  							#label for button
+										-value=>"0",  							#return value for capture variable
+										-variable=>\$cscore);					#define capture variable			
+$rdb_c0 -> grid(-row=>1,-column=>2);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -cscore value f1
+####################################################################################################################
+my $rdb_c1 = $frm_cscore -> Radiobutton(
+										-text=>"1",  							#label for button
+										-value=>"1",  							#return value for capture variable
+										-variable=>\$cscore);					#define capture variable			
+$rdb_c1 -> grid(-row=>1,-column=>3);											#grid geometry for button
+####################################################################################################################
+	
+####################################################################################################################
+#individual radiobutton -cscore value f1
+####################################################################################################################
+my $rdb_c2 = $frm_cscore -> Radiobutton(
+										-text=>"2",  							#label for button
+										-value=>"2",  							#return value for capture variable
+										-variable=>\$cscore);					#define capture variable			
+$rdb_c2 -> grid(-row=>1,-column=>4);											#grid geometry for button
+####################################################################################################################
+
+####################################################################################################################
+#individual radiobutton -cscore value f1
+####################################################################################################################
+my $rdb_c3 = $frm_cscore -> Radiobutton(
+										-text=>"3",  							#label for button
+										-value=>"3",  							#return value for capture variable
+										-variable=>\$cscore);					#define capture variable			
+$rdb_c3 -> grid(-row=>1,-column=>5);											#grid geometry for button
+####################################################################################################################
+#END OF RADIO BUTTON SET
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+MainLoop;
+
+}
+
+
